@@ -56,6 +56,7 @@ except ImportError:
 
 
 __version__ = 1, 1, 0
+PIP_VERSION = '8.0.3'
 
 
 # wheel has a conditional dependency on argparse:
@@ -68,7 +69,7 @@ maybe_argparse = (
 
 PACKAGES = maybe_argparse + [
     # Pip has no dependencies, as it vendors everything:
-    ('https://pypi.python.org/packages/source/p/pip/pip-8.0.3.tar.gz',
+    ('https://pypi.python.org/packages/source/p/pip/pip-{}.tar.gz'.format(PIP_VERSION),
      '30f98b66f3fe1069c529a491597d34a1c224a68640c82caf2ade5f88aa1405e8'),
     # This version of setuptools has only optional dependencies:
     ('https://pypi.python.org/packages/source/s/setuptools/'
@@ -124,6 +125,12 @@ def hashed_download(url, temp, digest):
 
 
 def main():
+    current_pip_version = check_output('pip --version', shell=True)
+    current_pip_version = current_pip_version.split()[1]
+    if current_pip_version == PIP_VERSION:
+        print('pip {} is already installed'.format(PIP_VERSION))
+        return 0
+
     temp = mkdtemp(prefix='pipstrap-')
     try:
         downloads = [hashed_download(url, temp, digest)
@@ -138,6 +145,7 @@ def main():
         raise
     else:
         rmtree(temp)
+        print('pip upgraded to {}'.format(PIP_VERSION))
         return 0
     return 1
 
